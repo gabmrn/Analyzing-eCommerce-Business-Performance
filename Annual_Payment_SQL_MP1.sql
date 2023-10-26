@@ -1,12 +1,12 @@
 CREATE EXTENSION IF NOT EXISTS tablefunc;
 
 CREATE TABLE payment_d AS(
-SELECT date_part('year', ord.order_purchase_timestamp) AS YEAR, opd.payment_type, COUNT(opd.payment_type) AS total_payments
+SELECT EXTRACT(YEAR from ord.order_purchase_timestamp) AS YEAR, opd.payment_type, COUNT(opd.payment_type) AS total_payments
 FROM order_payments_dataset opd
 JOIN orders_dataset ord 
 ON ord.order_id = opd.order_id
 GROUP BY 1,2
-ORDER BY 2 DESC)
+ORDER BY 2 DESC);
 
 SELECT payment_type, y2016, y2017, y2018, y2016+y2017+y2018 AS total_payment
 FROM (SELECT payment_type,

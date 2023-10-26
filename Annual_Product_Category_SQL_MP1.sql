@@ -1,6 +1,6 @@
 WITH annual_revenue AS(
 -- Annual Revenue
-	SELECT date_part('year', ord.order_purchase_timestamp) AS YEAR,
+	SELECT EXTRACT(YEAR FROM ord.order_purchase_timestamp) AS YEAR,
 		   ROUND(SUM(oid.price + oid.freight_value)::numeric,2) AS revenue
 	FROM orders_dataset ord
 	JOIN order_items_dataset oid
@@ -10,7 +10,7 @@ WITH annual_revenue AS(
 	ORDER BY 1),
 annual_canceled AS(
 -- The Numbers of canceled orders per Year
-	SELECT date_part('year', order_purchase_timestamp) AS YEAR,
+	SELECT EXTRACT(YEAR FROM order_purchase_timestamp) AS YEAR,
 		   COUNT(order_id) AS annual_cancel_totals
 	FROM orders_dataset
 	WHERE order_status = 'canceled'
@@ -19,10 +19,10 @@ annual_canceled AS(
 annual_top_product AS(
 -- The Highest Revenue Product Categories Per Year
 	SELECT YEAR, product_category, cat_revenue
-	FROM (SELECT date_part('year', ord.order_purchase_timestamp) AS YEAR,
+	FROM (SELECT EXTRACT(YEAR FROM ord.order_purchase_timestamp) AS YEAR,
 				 pd.product_category_name AS product_category,
 				 ROUND(SUM(oid.price + oid.freight_value)) AS cat_revenue,
-				 RANK() OVER (PARTITION BY date_part('year', ord.order_purchase_timestamp)
+				 RANK() OVER (PARTITION BY EXTRACT(YEAR FROM ord.order_purchase_timestamp)
 							  ORDER BY SUM(oid.price + oid.freight_value) DESC) AS ranks
 		  FROM order_items_dataset oid
 		  JOIN orders_dataset ord
@@ -36,10 +36,10 @@ annual_top_product AS(
 annual_top_canceled AS(
 -- The Most Canceled Product Categories per Year
 	SELECT YEAR, product_category, annual_cancel_total
-	FROM (SELECT date_part('year', ord.order_purchase_timestamp) AS YEAR,
+	FROM (SELECT EXTRACT(YEAR FROM ord.order_purchase_timestamp) AS YEAR,
 				 pd.product_category_name AS product_category,
 				 COUNT(ord.order_id) AS annual_cancel_total,
-				 RANK() OVER (PARTITION BY date_part('year', ord.order_purchase_timestamp)
+				 RANK() OVER (PARTITION BY EXTRACT(YEAR FROM ord.order_purchase_timestamp)
 							  ORDER BY COUNT(ord.order_id) DESC) AS ranks
 		  FROM order_items_dataset oid
 		  JOIN orders_dataset ord
